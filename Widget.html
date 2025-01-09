@@ -1,0 +1,136 @@
+<!-- 
+  Embed this in a Squarespace Code Block or similar "HTML/JS" injection area.
+  Make sure you have "Markdown" or "HTML" mode selected so it renders correctly.
+-->
+
+<!-- EXAMPLE: If you have an Adobe Fonts kit that includes Orpheus Pro,
+     you'd link it here. Adjust the URL as needed for your kit. -->
+<link rel="stylesheet" href="https://use.typekit.net/xxxxxxx.css" />
+
+<div id="price-widget-container">
+  <!-- CARD CONTAINER -->
+  <div class="price-card">
+    <!-- PRICE DISPLAY AT THE TOP -->
+    <div id="price-display">Estimate: $—</div>
+
+    <label for="shootDate">Date of Shoot:</label>
+    <input type="date" id="shootDate" />
+
+    <label for="duration">Duration (hours):</label>
+    <input
+      type="number"
+      id="duration"
+      min="1"
+      max="24"
+      step="0.5"
+      placeholder="e.g. 4"
+    />
+  </div>
+</div>
+
+<style>
+  /* Minimal Reset for demo */
+  * {
+    box-sizing: border-box;
+  }
+
+  #price-widget-container {
+    /* Center card in its container */
+    display: flex;
+    justify-content: center;
+    margin: 1rem auto;
+  }
+
+  .price-card {
+    /* Card styling */
+    background-color: #fff;
+    border-radius: 5px;
+    padding: 1.5rem;
+    max-width: 350px;
+    width: 100%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    font-family: "Orpheus Pro", serif; /* Fallback to serif if not available */
+    /* font-weight: 100; */
+  }
+
+  #price-display {
+    font-size: 40px;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  label {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+  }
+
+  input[type="date"],
+  input[type="number"] {
+    padding: 0.5rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: "Orpheus Pro", serif;
+    /* font-weight: 100; */
+  }
+
+  @media (max-width: 600px) {
+    /* Make sure it’s responsive on mobile */
+    .price-card {
+      max-width: 90%;
+      margin: 0 auto;
+    }
+  }
+</style>
+
+<script>
+  // Polynomial coefficients for base price:
+  // P(h) = 1263.67 + 125*h + 20.83*h^2
+  function basePriceFormula(hours) {
+    return 1263.67 + 125 * hours + 20.83 * Math.pow(hours, 2);
+  }
+
+  // Define peak wedding months (May–October)
+  const peakMonths = [5, 6, 7, 8, 9, 10];
+  const peakMarkup = 1.15; // +15%
+
+  const shootDateInput = document.getElementById("shootDate");
+  const durationInput = document.getElementById("duration");
+  const priceDisplay = document.getElementById("price-display");
+
+  function updatePrice() {
+    const dateValue = shootDateInput.value;
+    const hoursValue = parseFloat(durationInput.value);
+
+    if (!dateValue || isNaN(hoursValue)) {
+      priceDisplay.textContent = "Total Price: —";
+      return;
+    }
+
+    // Get the month (1-12) from the date
+    const shootDate = new Date(dateValue);
+    const shootMonth = shootDate.getMonth() + 1; // +1 because getMonth() is 0-based
+
+    // Calculate base polynomial price
+    let price = basePriceFormula(hoursValue);
+
+    // Apply peak markup if in peakMonths
+    if (peakMonths.includes(shootMonth)) {
+      price *= peakMarkup;
+    }
+
+    // Round to a whole number (or keep decimals if you prefer)
+    const finalPrice = Math.round(price);
+
+    // Update the displayed price
+    priceDisplay.textContent = `Total Price: $${finalPrice}`;
+  }
+
+  // Listen for changes
+  shootDateInput.addEventListener("change", updatePrice);
+  durationInput.addEventListener("input", updatePrice);
+</script>
